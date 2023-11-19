@@ -8,9 +8,11 @@
  */
 
 const request = require('request');
+const ipFetchURL = 'https://api.ipify.org?format=json';
+const geoURL = "https://ipwho.is/";
 
 const fetchMyIP = function(callback) {
-  request('https://api.ipify.org?format=json', (error, message, body) => {
+  request(ipFetchURL, (error, message, body) => {
     if (!error && message.statusCode === 200) {
       const data = JSON.parse(body);
       const tickedIP = JSON.stringify(data.ip);
@@ -31,17 +33,20 @@ const fetchMyIP = function(callback) {
 };
 
 const fetchCoordsByIP = function(IP, callback) {
-  const geoURL = "https://ipwho.is/";
   request(`${geoURL}${IP}`, (error, message, body) =>{
     if (!error && message.statusCode === 200) {
       const data = JSON.parse(body);
-      const latLong = { 
-        "latitude" : data["latitude"], 
-        "longitiude" : data["longitude"] };
-      console.log(latLong);
+      if (!data["success"]) {
+        console.log("Invalid IP address:", IP);
+      } else {
+        const latLong = {
+          "latitude" : data["latitude"],
+          "longitiude" : data["longitude"] };
+        console.log(latLong);
+      }
     }
     if (error) {
-      console.log("You have an error: ", error)
+      console.log("You have an error: ", error);
     }
     if (message.statusCode !== 200) {
       console.log("There is something wrong here! Check the code: ", message.statusCode);
@@ -51,7 +56,7 @@ const fetchCoordsByIP = function(IP, callback) {
 };
 
 
-module.exports = { 
+module.exports = {
   fetchMyIP,
   fetchCoordsByIP
-  };
+};
