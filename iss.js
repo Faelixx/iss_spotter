@@ -41,8 +41,10 @@ const fetchCoordsByIP = function(IP, callback) {
       } else {
         const latLong = {
           "latitude" : data["latitude"],
-          "longitiude" : data["longitude"] };
-        console.log(latLong);
+          "longitude" : data["longitude"]
+        };
+        // console.log(`Coordinates for ${IP}:`, latLong);
+        return latLong;
       }
     }
     if (error) {
@@ -55,8 +57,32 @@ const fetchCoordsByIP = function(IP, callback) {
   callback(null, IP);
 };
 
+const fetchISSFlyOverTimes = function(coords, callback) {
+  request(`https://iss-flyover.herokuapp.com/json/?lat=${coords["latitude"]}&lon=${coords["longitude"]}` , (error, message, body) => {
+    if (!error && message.statusCode === 200) {
+      const data = JSON.parse(body);
+      if (!data.response) {
+        callback(`Invalid response from API. Error: ${error}, Message: ${message.statusCode}, ${body}`, null);
+      } else {
+        callback(null, data.response);
+      }
+    }
+    if (error) {
+      callback(`Received following error: ${error}`, null);
+    }
+    if (message.statusCode !== 200) {
+      callback(`Received following status code: ${message.statusCode}`, null);
+    }
+  });
+};
+
+const nextISSTimesForMyLocation = function(callback) {
+  
+}
+
 
 module.exports = {
   fetchMyIP,
-  fetchCoordsByIP
+  fetchCoordsByIP,
+  fetchISSFlyOverTimes
 };
