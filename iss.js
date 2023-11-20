@@ -44,17 +44,18 @@ const fetchCoordsByIP = function(IP, callback) {
           "longitude" : data["longitude"]
         };
         // console.log(`Coordinates for ${IP}:`, latLong);
-        return latLong;
+        callback(null, latLong);
       }
     }
     if (error) {
-      console.log("You have an error: ", error);
+      callback(error, null);
+      return
     }
     if (message.statusCode !== 200) {
-      console.log("There is something wrong here! Check the code: ", message.statusCode);
+      callback(message.statusCode, null)
+      return
     }
   });
-  callback(null, IP);
 };
 
 const fetchISSFlyOverTimes = function(coords, callback) {
@@ -77,12 +78,25 @@ const fetchISSFlyOverTimes = function(coords, callback) {
 };
 
 const nextISSTimesForMyLocation = function(callback) {
-  
+  fetchMyIP((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
+    fetchCoordsByIP(ip, (error, geo) => {
+      if (error) {
+        return callback(error, null);
+      }
+      fetchISSFlyOverTimes(geo, (error, response) => {
+        if (error) {
+          return callback(error, null);
+        }
+        callback(null, response);
+      });
+    });
+  });
 }
 
 
 module.exports = {
-  fetchMyIP,
-  fetchCoordsByIP,
-  fetchISSFlyOverTimes
+  nextISSTimesForMyLocation
 };
